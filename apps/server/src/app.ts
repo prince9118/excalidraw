@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import { prisma } from "./lib/prisma.js";
 
 const app = express();
 
@@ -12,5 +13,6 @@ app.get("/api/health", (_req, res) => {
     message: "Server is running"
   });
 });
+
 
 export default app;

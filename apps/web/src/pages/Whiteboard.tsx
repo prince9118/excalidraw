@@ -4,6 +4,7 @@ import {
   useState,
 } from "react";
 
+import { DrawingWebSocket } from "../services/websocket";
 import { useParams } from "react-router-dom";
 
 import { api } from "../services/api";
@@ -17,7 +18,29 @@ import { renderCanvas } from "../canvas/renderer";
 
 export default function Whiteboard() {
   const { id } = useParams();
+  const websocketRef =
+  useRef<DrawingWebSocket | null>(null);
+  useEffect(() => {
+  const websocket =
+    new DrawingWebSocket();
 
+  websocketRef.current = websocket;
+
+  websocket.connect();
+
+  const unsubscribe =
+    websocket.subscribe((message) => {
+      console.log(
+        "Received WS message:",
+        message
+      );
+    });
+
+  return () => {
+    unsubscribe();
+    websocket.disconnect();
+  };
+}, []);
   const canvasRef =
     useRef<HTMLCanvasElement>(null);
 
@@ -187,8 +210,24 @@ export default function Whiteboard() {
   };
 
   const pointerUp = () => {
+    if (
+      !isDrawing.current ||
+      !drawingRef.current
+    ) {
+      return;
+    }
+
+    const element =
+      drawingRef.current;
+
     isDrawing.current = false;
     drawingRef.current = null;
+
+    websocketRef.current?.send({
+      type: "element:create",
+      drawingId: id,
+      element,
+    });
   };
 
   const save = async () => {

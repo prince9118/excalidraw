@@ -1,7 +1,14 @@
+import http from "http";
 import app from "./app.js";
+import { setupWebSocket } from "../src/websocket/server.js";
 
-const PORT = process.env.PORT || 4000;
+const PORT = Number(process.env.PORT) || 4000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+const httpServer = http.createServer(app);
+
+setupWebSocket(httpServer);
+
+httpServer.listen(PORT, () => {
+  console.log(`HTTP server running on http://localhost:${PORT}`);
+  console.log(`WebSocket server running on ws://localhost:${PORT}/ws`);
 });

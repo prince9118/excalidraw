@@ -1,24 +1,60 @@
-export type WebSocketMessage = {
-  type: string;
-  drawingId?: string;
-  element?: unknown;
-  elementId?: string;
-};
+export type WebSocketMessage =
+  | {
+      type: "connection:success";
+    }
+  | {
+      type: "error";
+      message: string;
+    }
+  | {
+      type: "drawing:join";
+      drawingId: string;
+    }
+  | {
+      type: "element:create";
+      drawingId: string;
+      element: unknown;
+    }
+  | {
+      type: "element:update";
+      drawingId: string;
+      elementId: string;
+      element?: unknown;
+    }
+  | {
+      type: "element:delete";
+      drawingId: string;
+      elementId: string;
+    };
 
 export class DrawingWebSocket {
   private socket: WebSocket | null = null;
 
   private listeners = new Set<(message: WebSocketMessage) => void>();
 
+  private pendingMessages: WebSocketMessage[] = [];
+
   connect() {
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
+    const token = localStorage.getItem("token");
+
     const wsUrl = apiUrl.replace(/^http/, "ws").concat("/ws");
 
-    this.socket = new WebSocket(wsUrl);
+    const authenticatedUrl = token
+      ? `${wsUrl}?token=${encodeURIComponent(token)}`
+      : wsUrl;
+
+    this.socket = new WebSocket(authenticatedUrl);
 
     this.socket.onopen = () => {
       console.log("WebSocket connected");
+
+      for (const message of this.pendingMessages) {
+        this.socket?.send(JSON.stringify(message));
+      }
+
+      this.pendingMessages = [];
     };
 
     this.socket.onmessage = (event) => {
@@ -46,6 +82,7 @@ export class DrawingWebSocket {
 
   send(message: WebSocketMessage) {
     if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
+      this.pendingMessages.push(message);
       return;
     }
 
@@ -61,7 +98,10 @@ export class DrawingWebSocket {
   }
 
   disconnect() {
+    this.pendingMessages = [];
+
     this.socket?.close();
+
     this.socket = null;
   }
 }

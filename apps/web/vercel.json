@@ -1,6 +1,11 @@
 {
   "redirects": [
     {
+      "source": "/",
+      "destination": "https://excalidraw.princechaudhary.xyz/",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "destination": "https://excalidraw.princechaudhary.xyz/:path*",
       "permanent": true

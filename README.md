@@ -9,13 +9,17 @@ A full-stack drawing app inspired by [Excalidraw](https://excalidraw.com/): a ca
 
 ## Features
 
-- Shapes: rectangle, ellipse, line, arrow, freehand pencil, and text
+- Shapes: rectangle, ellipse, line, arrow, freehand pencil, and text typed directly on the canvas
+- Floating toolbar with keyboard shortcuts: `1`–`7` or `V` `R` `O` `L` `A` `P` `T`
 - Select and drag elements to move them
 - Delete the selected element (toolbar button, `Delete` or `Backspace`)
 - Undo / redo (`Ctrl+Z`, `Ctrl+Shift+Z` or `Ctrl+Y`)
+- Rename a drawing from its title in the top-left corner
 - Autosave: changes are saved 800 ms after you stop editing, with a Saved / Saving / Unsaved indicator
 - Live sync: open the same drawing in two tabs or on two devices and edits appear in both instantly
-- Register, log in, and see all your drawings on a dashboard
+- Dashboard with a live thumbnail of every drawing
+- Light and dark themes that follow your system setting, with sharp rendering on high-DPI screens
+- Register (you're signed in right away) and log in
 - Expired sessions send you back to the login page
 
 ---

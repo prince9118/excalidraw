@@ -25,7 +25,13 @@ export const api = async <T>(
 
   // An expired or invalid token can't be recovered from here,
   // so drop it and send the user back to log in.
-  if (response.status === 401 && token) {
+  // Auth endpoints are skipped: a wrong password is also a 401, and
+  // the login form needs to show that error rather than reload.
+  if (
+    response.status === 401 &&
+    token &&
+    !path.startsWith("/api/auth/")
+  ) {
     localStorage.removeItem("token");
     window.location.assign("/login");
   }

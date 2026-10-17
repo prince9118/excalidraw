@@ -29,6 +29,8 @@ export const getUserDrawings = async (userId: string) => {
     select: {
       id: true,
       name: true,
+      // Returned so the dashboard can render thumbnails.
+      elements: true,
       createdAt: true,
       updatedAt: true
     }

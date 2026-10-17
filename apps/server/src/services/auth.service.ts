@@ -11,7 +11,7 @@ export const registerUser = async ({ email, password }: RegisterInput) => {
   });
 
   if (existingUser) {
-    throw new Error("user already exist");
+    throw new Error("USER_ALREADY_EXISTS");
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
@@ -38,13 +38,13 @@ export const loginUser = async ({ email, password }: LoginInput) => {
   });
 
   if (!user) {
-    throw new Error("invalid credentials");
+    throw new Error("INVALID_CREDENTIALS");
   }
 
   const passwordMatches = await bcrypt.compare(password, user.passwordHash);
 
   if (!passwordMatches) {
-    throw new Error("invalid creds");
+    throw new Error("INVALID_CREDENTIALS");
   }
 
   const token = generateToken(user.id);

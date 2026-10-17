@@ -19,7 +19,16 @@ export const api = async <T>(
     }
   });
 
-  const data = await response.json();
+  // 204 No Content (e.g. DELETE) has no body to parse.
+  const text = await response.text();
+  const data = text ? JSON.parse(text) : {};
+
+  // An expired or invalid token can't be recovered from here,
+  // so drop it and send the user back to log in.
+  if (response.status === 401 && token) {
+    localStorage.removeItem("token");
+    window.location.assign("/login");
+  }
 
   if (!response.ok) {
     throw new Error(data.message || "Something went wrong");

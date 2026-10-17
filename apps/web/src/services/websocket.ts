@@ -25,7 +25,17 @@ export type WebSocketMessage =
       type: "element:delete";
       drawingId: string;
       elementId: string;
+    }
+  | {
+      type: "elements:replace";
+      drawingId: string;
+      elements: unknown[];
     };
+
+// Close code the server uses for auth failures; retrying won't help.
+const POLICY_VIOLATION = 1008;
+
+const RECONNECT_DELAY_MS = 2000;
 
 export class DrawingWebSocket {
   private socket: WebSocket | null = null;
@@ -34,7 +44,16 @@ export class DrawingWebSocket {
 
   private pendingMessages: WebSocketMessage[] = [];
 
+  // Re-sent after every reconnect so the server puts us back in the room.
+  private joinMessage: WebSocketMessage | null = null;
+
+  private reconnectTimeout: number | null = null;
+
+  private closedByClient = false;
+
   connect() {
+    this.closedByClient = false;
+
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
     const token = localStorage.getItem("token");
@@ -45,19 +64,23 @@ export class DrawingWebSocket {
       ? `${wsUrl}?token=${encodeURIComponent(token)}`
       : wsUrl;
 
-    this.socket = new WebSocket(authenticatedUrl);
+    const socket = new WebSocket(authenticatedUrl);
 
-    this.socket.onopen = () => {
-      console.log("WebSocket connected");
+    this.socket = socket;
+
+    socket.onopen = () => {
+      if (this.joinMessage) {
+        socket.send(JSON.stringify(this.joinMessage));
+      }
 
       for (const message of this.pendingMessages) {
-        this.socket?.send(JSON.stringify(message));
+        socket.send(JSON.stringify(message));
       }
 
       this.pendingMessages = [];
     };
 
-    this.socket.onmessage = (event) => {
+    socket.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data) as WebSocketMessage;
 
@@ -69,20 +92,37 @@ export class DrawingWebSocket {
       }
     };
 
-    this.socket.onclose = () => {
-      console.log("WebSocket disconnected");
+    socket.onclose = (event) => {
+      if (this.socket === socket) {
+        this.socket = null;
+      }
 
-      this.socket = null;
+      if (this.closedByClient || event.code === POLICY_VIOLATION) {
+        return;
+      }
+
+      this.reconnectTimeout = window.setTimeout(() => {
+        this.reconnectTimeout = null;
+        this.connect();
+      }, RECONNECT_DELAY_MS);
     };
 
-    this.socket.onerror = (error) => {
+    socket.onerror = (error) => {
       console.error("WebSocket error", error);
     };
   }
 
   send(message: WebSocketMessage) {
+    if (message.type === "drawing:join") {
+      this.joinMessage = message;
+    }
+
     if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
-      this.pendingMessages.push(message);
+      // The join is replayed on open, so don't queue it twice.
+      if (message.type !== "drawing:join") {
+        this.pendingMessages.push(message);
+      }
+
       return;
     }
 
@@ -98,7 +138,16 @@ export class DrawingWebSocket {
   }
 
   disconnect() {
+    this.closedByClient = true;
+
+    if (this.reconnectTimeout !== null) {
+      window.clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
+    }
+
     this.pendingMessages = [];
+
+    this.joinMessage = null;
 
     this.socket?.close();
 

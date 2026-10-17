@@ -1,9 +1,10 @@
 import { Server as HTTPServer } from "http";
-import { WebSocketServer, WebSocket } from "ws";
+import { WebSocketServer, WebSocket, type RawData } from "ws";
 
 import { URL } from "url";
 
 import { authenticateWebSocket } from "./auth.js";
+import { prisma } from "../lib/prisma.js";
 
 interface ClientMessage {
   type: string;
@@ -12,11 +13,44 @@ interface ClientMessage {
   elementId?: string;
 }
 
+const RELAYED_TYPES = new Set([
+  "element:create",
+  "element:update",
+  "element:delete",
+  "elements:replace"
+]);
+
 export const setupWebSocket = (server: HTTPServer) => {
   const wss = new WebSocketServer({
     server,
     path: "/ws"
   });
+
+  // drawingId -> sockets currently viewing that drawing
+  const rooms = new Map<string, Set<WebSocket>>();
+
+  const leaveRoom = (socket: WebSocket, drawingId: string | null) => {
+    if (!drawingId) return;
+
+    const room = rooms.get(drawingId);
+
+    if (!room) return;
+
+    room.delete(socket);
+
+    if (room.size === 0) {
+      rooms.delete(drawingId);
+    }
+  };
+
+  const sendError = (socket: WebSocket, message: string) => {
+    socket.send(
+      JSON.stringify({
+        type: "error",
+        message
+      })
+    );
+  };
 
   wss.on("connection", (socket, request) => {
     const requestUrl = new URL(
@@ -40,7 +74,7 @@ export const setupWebSocket = (server: HTTPServer) => {
       return;
     }
 
-    console.log(`WebSocket authenticated: ${userId}`);
+    let joinedDrawingId: string | null = null;
 
     socket.send(
       JSON.stringify({
@@ -48,31 +82,100 @@ export const setupWebSocket = (server: HTTPServer) => {
       })
     );
 
-    socket.on("message", (rawMessage) => {
+    const handleMessage = async (rawMessage: RawData) => {
+      let message: ClientMessage;
+
       try {
-        const message = JSON.parse(rawMessage.toString()) as ClientMessage;
+        message = JSON.parse(rawMessage.toString()) as ClientMessage;
+      } catch {
+        sendError(socket, "Invalid message");
 
-        console.log("WS message:", message);
-
-        for (const client of wss.clients) {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify(message));
-          }
-        }
-      } catch (error) {
-        console.error("Invalid WebSocket message:", error);
-
-        socket.send(
-          JSON.stringify({
-            type: "error",
-            message: "Invalid message"
-          })
-        );
+        return;
       }
+
+      if (message.type === "drawing:join") {
+        if (typeof message.drawingId !== "string") {
+          sendError(socket, "drawingId is required");
+
+          return;
+        }
+
+        try {
+          const drawing = await prisma.drawing.findFirst({
+            where: {
+              id: message.drawingId,
+              userId
+            },
+            select: {
+              id: true
+            }
+          });
+
+          if (!drawing) {
+            sendError(socket, "Drawing not found");
+
+            return;
+          }
+        } catch (error) {
+          console.error("WebSocket join error:", error);
+
+          sendError(socket, "Could not join drawing");
+
+          return;
+        }
+
+        leaveRoom(socket, joinedDrawingId);
+
+        joinedDrawingId = message.drawingId;
+
+        let room = rooms.get(joinedDrawingId);
+
+        if (!room) {
+          room = new Set();
+          rooms.set(joinedDrawingId, room);
+        }
+
+        room.add(socket);
+
+        return;
+      }
+
+      if (!RELAYED_TYPES.has(message.type)) {
+        sendError(socket, "Unknown message type");
+
+        return;
+      }
+
+      if (!joinedDrawingId || message.drawingId !== joinedDrawingId) {
+        sendError(socket, "Join the drawing before sending changes");
+
+        return;
+      }
+
+      const payload = JSON.stringify(message);
+
+      for (const client of rooms.get(joinedDrawingId) ?? []) {
+        if (client !== socket && client.readyState === WebSocket.OPEN) {
+          client.send(payload);
+        }
+      }
+    };
+
+    // Handle messages one at a time so edits sent right after
+    // "drawing:join" aren't rejected while the join is still awaiting
+    // the database.
+    let messageQueue = Promise.resolve();
+
+    socket.on("message", (rawMessage) => {
+      messageQueue = messageQueue
+        .then(() => handleMessage(rawMessage))
+        .catch((error) => {
+          console.error("WebSocket message error:", error);
+        });
     });
 
     socket.on("close", () => {
-      console.log(`WebSocket disconnected: ${userId}`);
+      leaveRoom(socket, joinedDrawingId);
     });
 
     socket.on("error", (error) => {

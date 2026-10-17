@@ -66,7 +66,7 @@ export const login = async (req: Request, res: Response) => {
       data: resultData
     });
   } catch (error) {
-    if (error instanceof Error && error.message === "Invalid credentials") {
+    if (error instanceof Error && error.message === "INVALID_CREDENTIALS") {
       res.status(401).json({
         success: false,
         message: "Invalid email or password"

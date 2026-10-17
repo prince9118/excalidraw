@@ -40,6 +40,9 @@ export default function Whiteboard() {
   const dragOffsetRef =
     useRef({ x: 0, y: 0 });
 
+  const dragStartElementsRef =
+    useRef<DrawingElement[] | null>(null);
+
   const [elements, setElements] =
     useState<DrawingElement[]>([]);
 
@@ -168,9 +171,80 @@ export default function Whiteboard() {
       drawingId: id,
     });
 
+    // Remote changes are already saved by the client that made
+    // them, so they don't mark this tab as unsaved or touch undo.
     const unsubscribe =
       websocket.subscribe((message) => {
-        console.log("WS:", message);
+        if (
+          !("drawingId" in message) ||
+          message.drawingId !== id
+        ) {
+          return;
+        }
+
+        switch (message.type) {
+          case "element:create": {
+            const element = message.element;
+
+            if (!isDrawingElement(element)) return;
+
+            setElements((prev) =>
+              prev.some((e) => e.id === element.id)
+                ? prev
+                : [...prev, element]
+            );
+
+            break;
+          }
+
+          case "element:update": {
+            const element = message.element;
+
+            if (!isDrawingElement(element)) return;
+
+            setElements((prev) =>
+              prev.map((e) =>
+                e.id === element.id
+                  ? element
+                  : e
+              )
+            );
+
+            break;
+          }
+
+          case "element:delete": {
+            setElements((prev) =>
+              prev.filter(
+                (e) =>
+                  e.id !== message.elementId
+              )
+            );
+
+            setSelectedId((prev) =>
+              prev === message.elementId
+                ? null
+                : prev
+            );
+
+            break;
+          }
+
+          case "elements:replace": {
+            if (
+              !Array.isArray(message.elements) ||
+              !message.elements.every(isDrawingElement)
+            ) {
+              return;
+            }
+
+            setElements(
+              message.elements as DrawingElement[]
+            );
+
+            break;
+          }
+        }
       });
 
     return () => {
@@ -217,10 +291,10 @@ export default function Whiteboard() {
       return;
     }
 
-    setSaveStatus("saving");
-
     saveTimeoutRef.current =
       window.setTimeout(async () => {
+        setSaveStatus("saving");
+
         try {
           await api(
             `/api/drawings/${id}`,
@@ -232,7 +306,13 @@ export default function Whiteboard() {
             }
           );
 
-          setSaveStatus("saved");
+          // Edits made while the request was in flight leave the
+          // status as "unsaved" so they get saved on the next pass.
+          setSaveStatus((prev) =>
+            prev === "saving"
+              ? "saved"
+              : prev
+          );
         } catch (error) {
           console.error(
             "Autosave failed:",
@@ -420,6 +500,9 @@ export default function Whiteboard() {
         y: point.y - element.y,
       };
 
+      dragStartElementsRef.current =
+        elements;
+
       isDrawing.current = true;
 
       return;
@@ -485,6 +568,13 @@ export default function Whiteboard() {
 
     drawingRef.current =
       element;
+
+    setHistory((prev) => [
+      ...prev,
+      elements,
+    ]);
+
+    setFuture([]);
 
     setElements((prev) => [
       ...prev,
@@ -610,12 +700,15 @@ export default function Whiteboard() {
       ];
     }
 
-    setElements((prev) => [
-      ...prev.slice(0, -1),
-      {
-        ...current,
-      },
-    ]);
+    // Match by id: a remote element may have been appended
+    // after the one being drawn.
+    setElements((prev) =>
+      prev.map((element) =>
+        element.id === current.id
+          ? { ...current }
+          : element
+      )
+    );
 
     setSaveStatus("unsaved");
   };
@@ -639,10 +732,32 @@ export default function Whiteboard() {
       tool === "select" &&
       selectedId
     ) {
+      const before =
+        dragStartElementsRef.current;
+
+      dragStartElementsRef.current =
+        null;
+
+      // A click without a drag changes nothing.
+      if (!before || before === elements) {
+        return;
+      }
+
+      setHistory((prev) => [
+        ...prev,
+        before,
+      ]);
+
+      setFuture([]);
+
       websocketRef.current?.send({
         type: "element:update",
         drawingId: id as string,
         elementId: selectedId,
+        element: elements.find(
+          (element) =>
+            element.id === selectedId
+        ),
       });
 
       return;
@@ -714,6 +829,12 @@ export default function Whiteboard() {
 
     setElements(previous);
     setSaveStatus("unsaved");
+
+    websocketRef.current?.send({
+      type: "elements:replace",
+      drawingId: id as string,
+      elements: previous,
+    });
   };
 
   /*
@@ -741,6 +862,12 @@ export default function Whiteboard() {
 
     setElements(next);
     setSaveStatus("unsaved");
+
+    websocketRef.current?.send({
+      type: "elements:replace",
+      drawingId: id as string,
+      elements: next,
+    });
   };
 
   /*
@@ -955,6 +1082,30 @@ export default function Whiteboard() {
         }
       />
     </div>
+  );
+}
+
+/*
+ * Validate elements received over the WebSocket
+ */
+
+function isDrawingElement(
+  value: unknown
+): value is DrawingElement {
+  if (
+    typeof value !== "object" ||
+    value === null
+  ) {
+    return false;
+  }
+
+  const element = value as Record<string, unknown>;
+
+  return (
+    typeof element.id === "string" &&
+    typeof element.type === "string" &&
+    typeof element.x === "number" &&
+    typeof element.y === "number"
   );
 }
 

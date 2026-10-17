@@ -18,4 +18,9 @@ export type DrawingMessage =
       type: "element:delete";
       drawingId: string;
       elementId: string;
+    }
+  | {
+      type: "elements:replace";
+      drawingId: string;
+      elements: unknown[];
     };

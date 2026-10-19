@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react";
 
 import type { DrawingElement } from "../canvas/types";
-import { getElementsBounds, renderCanvas } from "../canvas/renderer";
+import { getElementsBounds } from "../canvas/geometry";
+import { renderCanvas } from "../canvas/renderer";
+import { useTheme } from "../services/theme";
 
 const PADDING = 16;
 
@@ -11,6 +13,8 @@ interface Props {
 
 export default function Thumbnail({ elements }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const { resolved: theme } = useTheme();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -59,14 +63,10 @@ export default function Thumbnail({ elements }: Props) {
     const observer = new ResizeObserver(draw);
     observer.observe(canvas);
 
-    const scheme = window.matchMedia("(prefers-color-scheme: dark)");
-    scheme.addEventListener("change", draw);
-
     return () => {
       observer.disconnect();
-      scheme.removeEventListener("change", draw);
     };
-  }, [elements]);
+  }, [elements, theme]);
 
   return <canvas ref={canvasRef} className="thumbnail-canvas" aria-hidden="true" />;
 }

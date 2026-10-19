@@ -114,7 +114,7 @@ const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 5;
 const HISTORY_LIMIT = 100;
 const GRID_SIZE = 22;
-const CLIPBOARD_KEY = "excalidraw-clipboard";
+const CLIPBOARD_KEY = "canvora-clipboard";
 
 // screen = world * zoom + (x, y)
 interface Camera {

@@ -267,7 +267,7 @@ export function Logo() {
           <path d="M3 17c3-1 4-9 7-9s2 8 5 8 3-6 6-7" />
         </svg>
       </span>
-      <span className="logo-word">Excalidraw</span>
+      <span className="logo-word">Canvora</span>
     </span>
   );
 }

@@ -1,6 +1,6 @@
-# Excalidraw Clone
+# Canvora
 
-A full-stack drawing app inspired by [Excalidraw](https://excalidraw.com/): a canvas whiteboard with accounts, autosaved drawings, and live sync between every tab or device where a drawing is open.
+Canvora is a full-stack drawing app inspired by [Excalidraw](https://excalidraw.com/): a canvas whiteboard with accounts, autosaved drawings, and live sync between every tab or device where a drawing is open.
 
 **Live:** https://excalidraw.princechaudhary.xyz
 **Repository:** https://github.com/prince9118/excalidraw
@@ -9,18 +9,51 @@ A full-stack drawing app inspired by [Excalidraw](https://excalidraw.com/): a ca
 
 ## Features
 
-- Shapes: rectangle, ellipse, line, arrow, freehand pencil, and text typed directly on the canvas
-- Floating toolbar with keyboard shortcuts: `1`–`7` or `V` `R` `O` `L` `A` `P` `T`
-- Select and drag elements to move them
-- Delete the selected element (toolbar button, `Delete` or `Backspace`)
-- Undo / redo (`Ctrl+Z`, `Ctrl+Shift+Z` or `Ctrl+Y`)
+### Drawing
+
+- Shapes: rectangle, diamond, ellipse, line, arrow, freehand pencil, and text typed directly on the canvas
+- Eraser: drag across shapes to fade them, release to delete them
+- Hold `Shift` while drawing for perfect squares and circles, and lines snapped to 45°
+- Style panel: stroke color, fill color (with a custom color picker), stroke width, solid / dashed / dotted lines, opacity, and font size for text
+- New shapes use the last style you picked; selecting a shape lets you restyle it
+
+### Editing
+
+- Select and drag to move; drag corner handles to resize, or drag a line/arrow endpoint
+- Double-click text to edit it, or double-click empty canvas to add text
+- Copy, cut and paste (`Ctrl+C` / `X` / `V`), including between drawings; duplicate with `Ctrl+D`
+- Nudge the selection with the arrow keys (`Shift` for bigger steps)
+- Bring to front / send to back
+- Undo / redo (`Ctrl+Z`, `Ctrl+Shift+Z` or `Ctrl+Y`); consecutive slider or nudge changes merge into one step
+
+### Canvas
+
+- Infinite canvas: scroll to pan, `Ctrl` + scroll or pinch to zoom around the cursor
+- Pan with the Hand tool (`H`), `Space` + drag, or the middle mouse button
+- Zoom controls: zoom in/out, reset to 100%, and zoom to fit (`Shift+1`)
+- Export the drawing as a PNG, or copy it to the clipboard
+- Clear the canvas (undoable)
+- Press `?` for a list of every keyboard shortcut
+
+### App
+
 - Rename a drawing from its title in the top-left corner
 - Autosave: changes are saved 800 ms after you stop editing, with a Saved / Saving / Unsaved indicator
 - Live sync: open the same drawing in two tabs or on two devices and edits appear in both instantly
-- Dashboard with a live thumbnail of every drawing
-- Light and dark themes that follow your system setting, with sharp rendering on high-DPI screens
+- Dashboard with a live thumbnail of every drawing, search, sorting, and duplicate / delete actions
+- Light, dark or system theme, with sharp rendering on high-DPI screens
 - Register (you're signed in right away) and log in
 - Expired sessions send you back to the login page
+
+### Keyboard shortcuts
+
+| Tool      | Keys      | Tool    | Keys      |
+|-----------|-----------|---------|-----------|
+| Hand      | `H`       | Arrow   | `A` / `5` |
+| Select    | `V` / `1` | Line    | `L` / `6` |
+| Rectangle | `R` / `2` | Pencil  | `P` / `7` |
+| Diamond   | `D` / `3` | Text    | `T` / `8` |
+| Ellipse   | `O` / `4` | Eraser  | `E` / `0` |
 
 ---
 
@@ -64,10 +97,12 @@ excalidraw/
 ├── apps/
 │   ├── web/                    # React frontend
 │   │   ├── src/
-│   │   │   ├── canvas/         # element types and canvas renderer
-│   │   │   ├── components/     # ProtectedRoute
+│   │   │   ├── canvas/         # element types, geometry (bounds, hit testing, resizing),
+│   │   │   │                   # renderer and PNG export
+│   │   │   ├── components/     # StylePanel, ShortcutsDialog, ThemeSwitcher, Thumbnail,
+│   │   │   │                   # icons, AuthLayout, ProtectedRoute
 │   │   │   ├── pages/          # Login, Register, Dashboard, Whiteboard
-│   │   │   └── services/       # REST client and WebSocket client
+│   │   │   └── services/       # REST client, WebSocket client, theme
 │   │   ├── vercel.json         # redirect from the old Vercel URL
 │   │   └── vite.config.ts
 │   │
@@ -140,17 +175,23 @@ Each element in `elements` looks like:
 ```ts
 {
   id: string;
-  type: "rectangle" | "ellipse" | "line" | "arrow" | "pencil" | "text";
+  type: "rectangle" | "diamond" | "ellipse" | "line" | "arrow" | "pencil" | "text";
   x: number;
   y: number;
-  width?: number;      // rectangle, ellipse
+  width?: number;      // rectangle, diamond, ellipse
   height?: number;
   points?: { x: number; y: number }[];  // line, arrow, pencil
-  text?: string;       // text
-  strokeColor?: string;
+  text?: string;       // text (x, y is the baseline)
+  fontSize?: number;   // text, default 20
+  strokeColor?: string;      // "#000000" follows the theme's ink color
+  backgroundColor?: string;  // fill for shapes, "transparent" for none
   strokeWidth?: number;
+  strokeStyle?: "solid" | "dashed" | "dotted";
+  opacity?: number;    // 10–100, default 100
 }
 ```
+
+Every style field is optional, so drawings saved by older versions still load. The server stores `elements` as plain JSON, so new element fields need no backend or database changes.
 
 ---
 

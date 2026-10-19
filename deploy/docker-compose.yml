@@ -1,0 +1,51 @@
+name: excalidraw
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: excalidraw
+      POSTGRES_DB: excalidraw
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U excalidraw -d excalidraw"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    logging: &logging
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  server:
+    image: ${SERVER_IMAGE:-excalidraw-server:latest}
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://excalidraw:${POSTGRES_PASSWORD}@postgres:5432/excalidraw
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: https://excalidraw.princechaudhary.xyz
+      PORT: "4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:4000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    networks:
+      default:
+      perps:
+        aliases: [excalidraw-server]
+    logging: *logging
+
+networks:
+  perps:
+    name: perps-v2_default
+    external: true
+
+volumes:
+  pgdata:

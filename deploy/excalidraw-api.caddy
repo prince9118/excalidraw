@@ -1,0 +1,4 @@
+excalidraw-api.princechaudhary.xyz {
+	encode zstd gzip
+	reverse_proxy excalidraw-server:4000
+}

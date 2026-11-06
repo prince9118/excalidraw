@@ -1463,3 +1463,106 @@ a:hover {
     padding: 0 12px;
   }
 }
+
+/* ---------- Fluid motion ---------- */
+/* Swim-like easing: quick start, soft overshoot, gentle settle. */
+
+:root {
+  --ease-flow: cubic-bezier(0.34, 1.4, 0.5, 1);
+  --ease-glide: cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+
+@keyframes drift-a {
+  0%, 100% { translate: 0 0; rotate: 0deg; }
+  25% { translate: 14px -10px; rotate: 2deg; }
+  50% { translate: 28px 4px; rotate: 0deg; }
+  75% { translate: 12px 12px; rotate: -2deg; }
+}
+
+@keyframes drift-b {
+  0%, 100% { translate: 0 0; }
+  33% { translate: -18px 12px; }
+  66% { translate: -6px -14px; }
+}
+
+@keyframes swim-path {
+  0% { stroke-dashoffset: 0; translate: 0 0; }
+  50% { stroke-dashoffset: -60; translate: 16px -6px; }
+  100% { stroke-dashoffset: 0; translate: 0 0; }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-9deg) translateX(-1px); }
+  60% { transform: rotate(7deg) translateX(1px); }
+}
+
+@keyframes ripple-bg {
+  from { background-position: 0 0; }
+  to { background-position: 22px 22px; }
+}
+
+.auth-page { animation: ripple-bg 6s linear infinite; }
+
+.auth-doodles > * {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: drift-a 11s ease-in-out infinite;
+}
+.auth-doodles > :nth-child(2n) { animation-name: drift-b; animation-duration: 14s; }
+.auth-doodles > :nth-child(3) { animation-name: swim-path; stroke-dasharray: 14 10; animation-duration: 9s; }
+.auth-doodles > :nth-child(4),
+.auth-doodles > :nth-child(5) { animation-delay: -4s; }
+
+.auth-card { animation: rise-in 0.55s var(--ease-flow) both; }
+.auth-form .field { animation: rise-in 0.5s var(--ease-glide) both; }
+.auth-form .field:nth-child(1) { animation-delay: 0.12s; }
+.auth-form .field:nth-child(2) { animation-delay: 0.2s; }
+.auth-form .field:nth-child(3) { animation-delay: 0.28s; }
+
+.dashboard-head,
+.dashboard-controls { animation: rise-in 0.5s var(--ease-glide) both; }
+.dashboard-controls { animation-delay: 0.08s; }
+
+.drawing-card:not(.skeleton) {
+  animation: rise-in 0.5s var(--ease-flow) backwards;
+  animation-delay: calc(var(--i, 0) * 55ms);
+  transition: transform 0.35s var(--ease-flow), box-shadow 0.25s, border-color 0.15s;
+}
+.drawing-card:not(.skeleton):hover { transform: translateY(-5px) rotate(-0.4deg); }
+.drawing-card:not(.skeleton):active { transform: translateY(-1px) scale(0.99); }
+
+.button { transition: background-color 0.15s, border-color 0.15s, transform 0.3s var(--ease-flow), box-shadow 0.2s; }
+.button:hover:not(:disabled) { transform: translateY(-1px); }
+.button:active:not(:disabled) { transform: translateY(1px) scale(0.97); }
+
+.icon-button,
+.tool-button { transition: background-color 0.15s, color 0.15s, transform 0.3s var(--ease-flow); }
+.icon-button:hover:not(:disabled),
+.tool-button:hover:not(:disabled) { transform: translateY(-2px) scale(1.08); }
+.icon-button:active:not(:disabled),
+.tool-button:active:not(:disabled) { transform: scale(0.92); }
+
+.logo-mark { display: inline-flex; }
+.logo:hover .logo-mark { animation: wiggle 0.6s ease-in-out; }
+
+.board-top,
+.board-bottom { animation: rise-in 0.5s var(--ease-glide) both; }
+.board-bottom { animation-delay: 0.1s; }
+
+.menu, .style-panel, .dialog { animation-timing-function: var(--ease-flow); animation-duration: 0.28s; }
+.swatch { transition: transform 0.3s var(--ease-flow); }
+.swatch:hover { transform: scale(1.18); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

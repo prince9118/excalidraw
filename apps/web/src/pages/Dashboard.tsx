@@ -281,10 +281,11 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="drawing-grid">
-            {visibleDrawings.map((drawing) => (
+            {visibleDrawings.map((drawing, index) => (
               <article
                 key={drawing.id}
                 className={`drawing-card${busyId === drawing.id ? " busy" : ""}`}
+                style={{ "--i": Math.min(index, 12) } as React.CSSProperties}
               >
                 <Link to={`/drawing/${drawing.id}`} className="card-link">
                   <div className="drawing-thumb">

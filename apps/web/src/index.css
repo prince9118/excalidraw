@@ -2,19 +2,19 @@
 
 :root {
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-hand: "Caveat", "Segoe Print", "Comic Sans MS", cursive;
+  --font-hand: "Segoe Print", "Comic Sans MS", cursive;
 
-  --bg: #f6f6f9;
+  --bg: #ffffff;
   --surface: #ffffff;
-  --surface-2: #f1f1f6;
-  --border: #e4e4ec;
-  --border-strong: #cfcfdc;
+  --surface-2: #f1f0ff;
+  --border: #e6e6eb;
+  --border-strong: #d0d0d8;
   --text: #1b1b1f;
   --muted: #6b6b7b;
 
   --accent: #6965db;
   --accent-hover: #5753d0;
-  --accent-soft: #ecebff;
+  --accent-soft: #e0dfff;
   --accent-contrast: #ffffff;
 
   --danger: #d63c3c;
@@ -23,16 +23,16 @@
   --warning: #e8590c;
 
   --canvas-bg: #ffffff;
-  --canvas-dot: #dcdce6;
+  --canvas-dot: transparent;
   --canvas-ink: #1e1e1e;
 
-  --shadow-sm: 0 1px 2px rgb(20 20 40 / 0.06);
-  --shadow: 0 1px 3px rgb(20 20 40 / 0.06), 0 8px 24px rgb(20 20 40 / 0.08);
-  --shadow-lg: 0 2px 6px rgb(20 20 40 / 0.06), 0 24px 48px rgb(20 20 40 / 0.12);
+  --shadow-sm: none;
+  --shadow: 0 0 0 1px rgb(0 0 0 / 0.04), 0 2px 8px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 0 0 1px rgb(0 0 0 / 0.04), 0 4px 16px rgb(0 0 0 / 0.14);
 
-  --radius-sm: 8px;
-  --radius: 12px;
-  --radius-lg: 18px;
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 10px;
 
   color-scheme: light;
 }
@@ -42,9 +42,9 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #111114;
-    --surface: #1b1b20;
-    --surface-2: #25252c;
+    --bg: #121212;
+    --surface: #232329;
+    --surface-2: #2e2d39;
     --border: #2c2c35;
     --border-strong: #3c3c48;
     --text: #ececf1;
@@ -60,22 +60,22 @@
     --success: #69db7c;
     --warning: #ffa94d;
 
-    --canvas-bg: #121215;
-    --canvas-dot: #2a2a33;
+    --canvas-bg: #121212;
+    --canvas-dot: transparent;
     --canvas-ink: #e3e3ea;
 
-    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow: 0 1px 3px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.35);
-    --shadow-lg: 0 2px 6px rgb(0 0 0 / 0.4), 0 24px 48px rgb(0 0 0 / 0.5);
+    --shadow-sm: none;
+    --shadow: 0 0 0 1px rgb(255 255 255 / 0.04), 0 2px 8px rgb(0 0 0 / 0.5);
+    --shadow-lg: 0 0 0 1px rgb(255 255 255 / 0.05), 0 4px 16px rgb(0 0 0 / 0.6);
 
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #111114;
-  --surface: #1b1b20;
-  --surface-2: #25252c;
+  --bg: #121212;
+  --surface: #232329;
+  --surface-2: #2e2d39;
   --border: #2c2c35;
   --border-strong: #3c3c48;
   --text: #ececf1;
@@ -91,13 +91,13 @@
   --success: #69db7c;
   --warning: #ffa94d;
 
-  --canvas-bg: #121215;
-  --canvas-dot: #2a2a33;
+  --canvas-bg: #121212;
+  --canvas-dot: transparent;
   --canvas-ink: #e3e3ea;
 
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
-  --shadow: 0 1px 3px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.35);
-  --shadow-lg: 0 2px 6px rgb(0 0 0 / 0.4), 0 24px 48px rgb(0 0 0 / 0.5);
+  --shadow-sm: none;
+  --shadow: 0 0 0 1px rgb(255 255 255 / 0.04), 0 2px 8px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 0 0 1px rgb(255 255 255 / 0.05), 0 4px 16px rgb(0 0 0 / 0.6);
 
   color-scheme: dark;
 }
@@ -159,19 +159,15 @@ a:hover {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 40px;
-  padding: 0 16px;
+  height: 36px;
+  padding: 0 14px;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 14px;
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color 0.15s, border-color 0.15s, transform 0.05s;
-}
-
-.button:active:not(:disabled) {
-  transform: translateY(1px);
+  transition: background-color 0.12s, border-color 0.12s;
 }
 
 .button:disabled {
@@ -182,7 +178,6 @@ a:hover {
 .button.primary {
   background: var(--accent);
   color: var(--accent-contrast);
-  box-shadow: var(--shadow-sm);
 }
 
 .button.primary:hover:not(:disabled) {
@@ -262,20 +257,18 @@ a:hover {
 .logo-mark {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   background: var(--accent);
   color: var(--accent-contrast);
-  box-shadow: var(--shadow-sm);
 }
 
 .logo-word {
-  font-family: var(--font-hand);
-  font-size: 26px;
+  font-size: 18px;
   font-weight: 700;
   line-height: 1;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
 }
 
 /* ---------- Forms ---------- */
@@ -329,11 +322,10 @@ a:hover {
   padding: 24px 16px;
   overflow: hidden;
   background-color: var(--bg);
-  background-image: radial-gradient(var(--canvas-dot) 1px, transparent 1px);
-  background-size: 22px 22px;
 }
 
 .auth-doodles {
+  display: none;
   position: absolute;
   inset: 0;
   width: 100%;
@@ -351,10 +343,10 @@ a:hover {
   position: relative;
   width: 100%;
   max-width: 400px;
-  padding: 32px;
+  padding: 28px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -362,9 +354,9 @@ a:hover {
 }
 
 .auth-head h1 {
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .auth-head p {
@@ -410,8 +402,7 @@ a:hover {
   gap: 16px;
   height: 64px;
   padding: 0 max(16px, calc((100vw - 1160px) / 2));
-  background: color-mix(in srgb, var(--bg) 85%, transparent);
-  backdrop-filter: blur(10px);
+  background: var(--bg);
   border-bottom: 1px solid var(--border);
 }
 
@@ -468,9 +459,9 @@ a:hover {
 }
 
 .dashboard-head h1 {
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: -0.025em;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   line-height: 1.2;
 }
 
@@ -496,13 +487,11 @@ a:hover {
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  transition: border-color 0.12s;
 }
 
 .drawing-card:not(.skeleton):hover {
-  transform: translateY(-2px);
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow);
+  border-color: var(--accent);
 }
 
 .drawing-thumb {
@@ -511,8 +500,6 @@ a:hover {
   display: grid;
   place-items: center;
   background-color: var(--canvas-bg);
-  background-image: radial-gradient(var(--canvas-dot) 1px, transparent 1px);
-  background-size: 14px 14px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -587,8 +574,7 @@ a:hover {
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
   opacity: 0;
-  transform: translateY(-2px);
-  transition: opacity 0.15s, transform 0.15s;
+  transition: opacity 0.12s;
 }
 
 .card-actions .icon-button {
@@ -619,7 +605,6 @@ a:hover {
   gap: 14px;
   padding: 20px;
   background: color-mix(in srgb, var(--surface) 94%, transparent);
-  backdrop-filter: blur(3px);
   text-align: center;
   animation: fade-in 0.12s ease-out;
 }
@@ -793,8 +778,6 @@ a:hover {
   inset: 0;
   overflow: hidden;
   background-color: var(--canvas-bg);
-  background-image: radial-gradient(var(--canvas-dot) 1.2px, transparent 1.2px);
-  background-size: 22px 22px;
 }
 
 .board-canvas {
@@ -863,7 +846,7 @@ a:hover {
 }
 
 .name-input {
-  width: 200px;
+  width: 180px;
   min-width: 0;
   height: 36px;
   padding: 0 10px;
@@ -890,14 +873,14 @@ a:hover {
   position: relative;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text);
   cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
+  transition: background-color 0.12s, color 0.12s;
 }
 
 .tool-button:hover {
@@ -1196,15 +1179,12 @@ a:hover {
   border: 1px solid rgb(0 0 0 / 0.12);
   border-radius: 6px;
   cursor: pointer;
-  transition: transform 0.1s;
 }
 
-.swatch:hover {
-  transform: scale(1.1);
-}
+
 
 .swatch.active {
-  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  box-shadow: 0 0 0 1px var(--surface), 0 0 0 3px var(--accent);
 }
 
 /* Diagonal slash for "no fill". */
@@ -1352,8 +1332,7 @@ a:hover {
   display: grid;
   place-items: center;
   padding: 16px;
-  background: rgb(10 10 20 / 0.45);
-  backdrop-filter: blur(2px);
+  background: rgb(0 0 0 / 0.35);
   animation: fade-in 0.15s ease-out;
 }
 
@@ -1464,105 +1443,12 @@ a:hover {
   }
 }
 
-/* ---------- Fluid motion ---------- */
-/* Swim-like easing: quick start, soft overshoot, gentle settle. */
-
-:root {
-  --ease-flow: cubic-bezier(0.34, 1.4, 0.5, 1);
-  --ease-glide: cubic-bezier(0.22, 0.8, 0.3, 1);
-}
-
-@keyframes drift-a {
-  0%, 100% { translate: 0 0; rotate: 0deg; }
-  25% { translate: 14px -10px; rotate: 2deg; }
-  50% { translate: 28px 4px; rotate: 0deg; }
-  75% { translate: 12px 12px; rotate: -2deg; }
-}
-
-@keyframes drift-b {
-  0%, 100% { translate: 0 0; }
-  33% { translate: -18px 12px; }
-  66% { translate: -6px -14px; }
-}
-
-@keyframes swim-path {
-  0% { stroke-dashoffset: 0; translate: 0 0; }
-  50% { stroke-dashoffset: -60; translate: 16px -6px; }
-  100% { stroke-dashoffset: 0; translate: 0 0; }
-}
-
-@keyframes rise-in {
-  from { opacity: 0; transform: translateY(16px) scale(0.97); }
-  to { opacity: 1; transform: none; }
-}
-
-@keyframes wiggle {
-  0%, 100% { transform: rotate(0); }
-  25% { transform: rotate(-9deg) translateX(-1px); }
-  60% { transform: rotate(7deg) translateX(1px); }
-}
-
-@keyframes ripple-bg {
-  from { background-position: 0 0; }
-  to { background-position: 22px 22px; }
-}
-
-.auth-page { animation: ripple-bg 6s linear infinite; }
-
-.auth-doodles > * {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: drift-a 11s ease-in-out infinite;
-}
-.auth-doodles > :nth-child(2n) { animation-name: drift-b; animation-duration: 14s; }
-.auth-doodles > :nth-child(3) { animation-name: swim-path; stroke-dasharray: 14 10; animation-duration: 9s; }
-.auth-doodles > :nth-child(4),
-.auth-doodles > :nth-child(5) { animation-delay: -4s; }
-
-.auth-card { animation: rise-in 0.55s var(--ease-flow) both; }
-.auth-form .field { animation: rise-in 0.5s var(--ease-glide) both; }
-.auth-form .field:nth-child(1) { animation-delay: 0.12s; }
-.auth-form .field:nth-child(2) { animation-delay: 0.2s; }
-.auth-form .field:nth-child(3) { animation-delay: 0.28s; }
-
-.dashboard-head,
-.dashboard-controls { animation: rise-in 0.5s var(--ease-glide) both; }
-.dashboard-controls { animation-delay: 0.08s; }
-
-.drawing-card:not(.skeleton) {
-  animation: rise-in 0.5s var(--ease-flow) backwards;
-  animation-delay: calc(var(--i, 0) * 55ms);
-  transition: transform 0.35s var(--ease-flow), box-shadow 0.25s, border-color 0.15s;
-}
-.drawing-card:not(.skeleton):hover { transform: translateY(-5px) rotate(-0.4deg); }
-.drawing-card:not(.skeleton):active { transform: translateY(-1px) scale(0.99); }
-
-.button { transition: background-color 0.15s, border-color 0.15s, transform 0.3s var(--ease-flow), box-shadow 0.2s; }
-.button:hover:not(:disabled) { transform: translateY(-1px); }
-.button:active:not(:disabled) { transform: translateY(1px) scale(0.97); }
-
-.icon-button,
-.tool-button { transition: background-color 0.15s, color 0.15s, transform 0.3s var(--ease-flow); }
-.icon-button:hover:not(:disabled),
-.tool-button:hover:not(:disabled) { transform: translateY(-2px) scale(1.08); }
-.icon-button:active:not(:disabled),
-.tool-button:active:not(:disabled) { transform: scale(0.92); }
-
-.logo-mark { display: inline-flex; }
-.logo:hover .logo-mark { animation: wiggle 0.6s ease-in-out; }
-
-.board-top,
-.board-bottom { animation: rise-in 0.5s var(--ease-glide) both; }
-.board-bottom { animation-delay: 0.1s; }
-
-.menu, .style-panel, .dialog { animation-timing-function: var(--ease-flow); animation-duration: 0.28s; }
-.swatch { transition: transform 0.3s var(--ease-flow); }
-.swatch:hover { transform: scale(1.18); }
+/* ---------- Motion ---------- */
+/* Kept deliberately minimal: short fades only. */
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }
